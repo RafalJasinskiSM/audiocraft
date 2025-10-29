@@ -1,0 +1,5 @@
+aws:
+  dora_dir: ${oc.env:HOME}/audiocraft-output/experiments/audiocraft/outputs
+  reference_dir: ${oc.env:HOME}/audiocraft-output/shared/audiocraft/reference
+  dataset_mappers:
+    "^/checkpoint/[a-z]+": "${oc.env:HOME}/audiocraft-output"
