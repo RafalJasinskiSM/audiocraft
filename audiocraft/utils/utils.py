@@ -147,12 +147,10 @@ class DummyPoolExecutor:
     """
     class DummyResult:
         def __init__(self, func, *args, **kwargs):
-            self.func = func
-            self.args = args
-            self.kwargs = kwargs
+            self.ret = func(*args, **kwargs)
 
         def result(self):
-            return self.func(*self.args, **self.kwargs)
+            return self.ret
 
     def __init__(self, workers, mp_context=None):
         pass
