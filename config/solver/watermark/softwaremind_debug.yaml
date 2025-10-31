@@ -6,7 +6,7 @@ defaults:
   - /model: watermark/default
   - _self_
 
-solver: watermarking # standard name to load the solver using builders
+solver: sm_watermarking # standard name to load the solver using builders
 sample_rate: 16000
 channels: 1
 
@@ -26,13 +26,15 @@ dataset:
   sample_on_duration: false  # Uniform sampling all the way
 
   train:
-    num_samples: 50
+    num_samples: 160
   generate:
     batch_size: 16
-    num_samples: 50
+    num_samples: 160
     segment_duration: 30
   valid:
-    num_samples: 50
+    num_samples: 160
+  evaluate:
+    num_samples: 160
 
 # solver hyperparameters
 evaluate:
@@ -72,7 +74,6 @@ optim:
     device: ${device} # device for EMA, can be put on GPU if more frequent updates
     decay: 0.99 # EMA decay value, if null, no EMA is used
 
-  
 schedule:
   lr_scheduler: "cosine"
   cosine:
