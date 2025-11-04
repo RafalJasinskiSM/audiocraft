@@ -5,6 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 """Various utilities for audio convertion (pcm format, sample rate and channels),
 and volume normalization."""
+from .venv.lib.python3.9.site-packages.pip._vendor.requests.packages import target
 import io
 import logging
 import re
@@ -230,6 +231,48 @@ def compress(wav: torch.Tensor, sr: int,
         return wav, sr
 
 
+def _get_compressed(wav_tensor: torch.Tensor, sr: int, target_format: str, bitrate: str = "128k"):
+    """Convert a batch of audio files to specifed format, maintaining the original shape.
+
+    This function takes a batch of audio files represented as a PyTorch tensor, converts
+    them to MP3 format using the specified bitrate, and returns the batch in the same
+    shape as the input.
+
+    Args:
+        wav_tensor (torch.Tensor): Batch of audio files represented as a tensor.
+            Shape should be (batch_size, channels, length).
+        sr (int): Sampling rate of the audio.
+        target_format (str): format to compress to
+        bitrate (str): Bitrate for MP3 conversion, default is '128k'.
+
+    Returns:
+        torch.Tensor: Batch of audio files converted to MP3 format, with the same
+            shape as the input tensor.
+    """
+    device = wav_tensor.device
+    batch_size, channels, original_length = wav_tensor.shape
+
+    # Flatten tensor for conversion and move to CPU
+    wav_tensor_flat = wav_tensor.view(1, -1).cpu()
+
+    # Convert to MP3 format with specified bitrate
+    wav_tensor_flat, _ = compress(wav_tensor_flat, sr, target_format=target_format, bitrate=bitrate)
+
+    # Reshape back to original batch format and trim or pad if necessary
+    wav_tensor = wav_tensor_flat.view(batch_size, channels, -1)
+    compressed_length = wav_tensor.shape[-1]
+    if compressed_length > original_length:
+        wav_tensor = wav_tensor[:, :, :original_length]  # Trim excess frames
+    elif compressed_length < original_length:
+        padding = torch.zeros(
+            batch_size, channels, original_length - compressed_length, device=device
+        )
+        wav_tensor = torch.cat((wav_tensor, padding), dim=-1)  # Pad with zeros
+
+    # Move tensor back to the original device
+    return wav_tensor.to(device)
+
+
 def get_mp3(wav_tensor: torch.Tensor, sr: int, bitrate: str = "128k") -> torch.Tensor:
     """Convert a batch of audio files to MP3 format, maintaining the original shape.
 
@@ -247,28 +290,27 @@ def get_mp3(wav_tensor: torch.Tensor, sr: int, bitrate: str = "128k") -> torch.T
         torch.Tensor: Batch of audio files converted to MP3 format, with the same
             shape as the input tensor.
     """
-    device = wav_tensor.device
-    batch_size, channels, original_length = wav_tensor.shape
+    return _get_compressed(wav_tensor, sr, "mp3", bitrate)
 
-    # Flatten tensor for conversion and move to CPU
-    wav_tensor_flat = wav_tensor.view(1, -1).cpu()
 
-    # Convert to MP3 format with specified bitrate
-    wav_tensor_flat, _ = compress(wav_tensor_flat, sr, bitrate=bitrate)
+def get_ogg(wav_tensor: torch.Tensor, sr: int, bitrate: str = "128k") -> torch.Tensor:
+    """Convert a batch of audio files to ogg format, maintaining the original shape.
 
-    # Reshape back to original batch format and trim or pad if necessary
-    wav_tensor = wav_tensor_flat.view(batch_size, channels, -1)
-    compressed_length = wav_tensor.shape[-1]
-    if compressed_length > original_length:
-        wav_tensor = wav_tensor[:, :, :original_length]  # Trim excess frames
-    elif compressed_length < original_length:
-        padding = torch.zeros(
-            batch_size, channels, original_length - compressed_length, device=device
-        )
-        wav_tensor = torch.cat((wav_tensor, padding), dim=-1)  # Pad with zeros
+    This function takes a batch of audio files represented as a PyTorch tensor, converts
+    them to MP3 format using the specified bitrate, and returns the batch in the same
+    shape as the input.
 
-    # Move tensor back to the original device
-    return wav_tensor.to(device)
+    Args:
+        wav_tensor (torch.Tensor): Batch of audio files represented as a tensor.
+            Shape should be (batch_size, channels, length).
+        sr (int): Sampling rate of the audio.
+        bitrate (str): Bitrate for MP3 conversion, default is '128k'.
+
+    Returns:
+        torch.Tensor: Batch of audio files converted to MP3 format, with the same
+            shape as the input tensor.
+    """
+    return _get_compressed(wav_tensor, sr, "ogg", bitrate)
 
 
 def get_aac(

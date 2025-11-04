@@ -15,7 +15,7 @@ import omegaconf
 import torch
 from julius import fft_conv1d, resample_frac
 
-from ..data.audio_utils import get_aac, get_mp3
+from ..data.audio_utils import get_aac, get_mp3, get_ogg
 
 if tp.TYPE_CHECKING:
     from ..models.encodec import CompressionModel
@@ -429,6 +429,28 @@ class AudioEffects:
         """
         out = apply_compression_skip_grad(
             tensor, get_mp3, sr=sample_rate, bitrate=bitrate
+        )
+        return audio_effect_return(tensor=out, mask=mask)
+
+    @staticmethod
+    def ogg_compression(
+        tensor: torch.Tensor,
+        sample_rate: int = 16000,
+        bitrate: str = "128k",
+        mask: tp.Optional[torch.Tensor] = None,
+    ) -> tp.Union[tp.Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+        """
+        Compress audio using Opus algorithm
+        Args:
+            tensor (torch.Tensor): The input audio tensor.
+            sample_rate (int): The sample rate of the audio.
+            bitrate (str): The bitrate for MP3 compression.
+
+        Returns:
+            torch.Tensor: The output tensor after applying Opus compression.
+        """
+        out = apply_compression_skip_grad(
+            tensor, get_ogg, sr=sample_rate, bitrate=bitrate
         )
         return audio_effect_return(tensor=out, mask=mask)
 
