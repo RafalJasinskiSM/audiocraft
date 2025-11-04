@@ -208,21 +208,26 @@ def compress(wav: torch.Tensor, sr: int,
     """
 
     # Extract the bit rate from string (e.g., '128k')
+    # For ogg bitrate has to be ignored
     match = re.search(r"\d+(\.\d+)?", str(bitrate))
     parsed_bitrate = float(match.group()) if match else None
     assert parsed_bitrate, f"Invalid bitrate specified (got {parsed_bitrate})"
+
     try:
         # Create a virtual file instead of saving to disk
         buffer = io.BytesIO()
-        torchaudio.save(buffer, wav, sr, format=target_format, backend="soundfile", bits_per_sample=parsed_bitrate)
+        if target_format == "ogg":
+            torchaudio.save(buffer, wav, sr, format=target_format, backend="soundfile")
+        else:
+            torchaudio.save(buffer, wav, sr, format=target_format, bits_per_sample=parsed_bitrate)
         # Move to the beginning of the file
         buffer.seek(0)
         compressed_wav, sr = torchaudio.load(buffer)
         return compressed_wav, sr
 
-    except _:
+    except Exception as e:
         logger.warning(
-            f"compression failed skipping compression: {format} {parsed_bitrate}"
+            f"compression failed skipping compression: {target_format} {parsed_bitrate}"
         )
         return wav, sr
 
@@ -252,9 +257,6 @@ def _get_compressed(wav_tensor: torch.Tensor, sr: int, target_format: str, bitra
     wav_tensor_flat = wav_tensor.view(1, -1).cpu()
 
     # Convert to MP3 or ogg format with specified bitrate
-    # For ogg bitrate has to be ignored
-    if target_format == "ogg":
-        bitrate = None
     wav_tensor_flat, _ = compress(wav_tensor_flat, sr, target_format=target_format, bitrate=bitrate)
 
     # Reshape back to original batch format and trim or pad if necessary
