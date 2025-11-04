@@ -283,13 +283,13 @@ class SMWatermarkSolver(base.StandardSolver):
         # adversarial losses
         if self.cfg.losses.adv != 0 or self.cfg.losses.feat != 0:
             for adv_name, adversary in self.adv_losses.items():
-                if getattr(self.cfg.adversarial.raw_loss, True):
+                if getattr(self.cfg.adversarial, "raw_loss", True):
                     adv_loss, feat_loss = adversary(y_wm, y)
                     balanced_losses[f"adv_{adv_name}"] = adv_loss
                     balanced_losses[f"feat_{adv_name}"] = feat_loss
 
                 # Do ogg compression losses
-                if getattr(self.cfg.adversarial.ogg_loss, False) == True:
+                if getattr(self.cfg.adversarial, "ogg_loss", False) == True:
                     adv_loss, feat_loss = adversary(get_ogg(y_wm, self.cfg.sample_rate, bitrate="24k"),
                                                     get_ogg(y, self.cfg.sample_rate, bitrate="24k"))
                     balanced_losses[f"adv_{adv_name}_ogg"] = adv_loss
@@ -626,7 +626,7 @@ class SMWatermarkSolver(base.StandardSolver):
 
     def run_epoch(self):
         self.rng = torch.Generator()
-        self.rng.manual_seed(cfg.seed + self.epoch)
+        self.rng.manual_seed(self.cfg.seed + self.epoch)
 
         self.run_stage('train', self.train)
         with torch.no_grad():
