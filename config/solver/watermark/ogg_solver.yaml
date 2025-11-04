@@ -6,9 +6,11 @@ defaults:
   - /model: watermark/sm_default
   - _self_
 
-solver: sm_watermarking # standard name to load the solver using builders
+solver: ogg_watermarking # standard name to load the solver using builders
 sample_rate: 16000
 channels: 1
+
+seed: 4321
 
 # solver hyperparameters
 evaluate:

@@ -617,7 +617,7 @@ class OggWatermarkSolver(base.StandardSolver):
 
     def run_epoch(self):
         self.rng = torch.Generator()
-        self.rng.manual_seed(1234 + self.epoch)
+        self.rng.manual_seed(cfg.seed + self.epoch)
 
         self.run_stage('train', self.train)
         with torch.no_grad():
