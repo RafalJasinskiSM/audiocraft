@@ -50,6 +50,7 @@ def get_solver(cfg: omegaconf.DictConfig) -> StandardSolver:
     from .magnet import MagnetSolver, AudioMagnetSolver
     from .watermark import WatermarkSolver
     from .sm_watermark import SMWatermarkSolver
+    from .ogg_watermark import OggWatermarkSolver
     from .jasco import JascoSolver
     klass = {
         'compression': CompressionSolver,
@@ -62,6 +63,7 @@ def get_solver(cfg: omegaconf.DictConfig) -> StandardSolver:
         'sound_lm': AudioGenSolver,  # backward compatibility
         'watermarking': WatermarkSolver,
         'sm_watermarking': SMWatermarkSolver,
+        'ogg_watermarking': OggWatermarkSolver,
         'jasco': JascoSolver,
     }[cfg.solver]
     return klass(cfg)  # type: ignore
