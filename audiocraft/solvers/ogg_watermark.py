@@ -295,7 +295,7 @@ class OggWatermarkSolver(base.StandardSolver):
         mode = "all" if self.cfg.select_aug_mode == "all" else "weighted"
         selected_augs = select_audio_effects(
             self.augmentations,
-            self.aug_weighs,
+            self.aug_weights,
             mode=mode,
             max_length=self.cfg.n_max_aug,
         )
