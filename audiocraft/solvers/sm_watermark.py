@@ -19,6 +19,7 @@ import torch.nn as nn
 
 from . import base, builders
 from ..models.builders import get_watermark_model
+from ..models.watermark import AudioSeal
 from ..modules.watermark import pad, mix
 
 from ..metrics.miou import calculate_miou
@@ -32,7 +33,7 @@ from ..utils.audio_effects import (
 )
 from ..utils.samples.manager import SampleManager
 from ..data.audio import save_spectrograms
-from ..utils.utils import get_pool_executor
+from ..utils.utils import get_pool_executor, with_rank_rng
 
 from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
 from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
@@ -167,6 +168,7 @@ class SMWatermarkSolver(base.StandardSolver):
         """Instantiate model and optimizer."""
         # Model and optimizer
         self.model = get_watermark_model(self.cfg)
+        # self.model = AudioSeal.get_pretrained()
         # Need two optimizers ?
         self.optimizer = builders.get_optimizer(self.model.parameters(), self.cfg.optim)
         self.register_stateful("model", "optimizer")
@@ -390,13 +392,6 @@ class SMWatermarkSolver(base.StandardSolver):
 
         return metrics
 
-    def run_epoch(self):
-        # reset random seed at the beginning of the epoch
-        self.rng = torch.Generator()
-        self.rng.manual_seed(1234 + self.epoch)
-        # run epoch
-        super().run_epoch()
-
     def evaluate(self) -> dict:
         """Evaluate stage. Runs audio reconstruction evaluation."""
         self.model.eval()
@@ -612,6 +607,30 @@ class SMWatermarkSolver(base.StandardSolver):
         watermarking_model.eval()
         logger.info("Watermarking model loaded!")
         return watermarking_model
+
+    # def run_epoch(self):
+    #     # reset random seed at the beginning of the epoch
+    #     self.rng = torch.Generator()
+    #     self.rng.manual_seed(1234 + self.epoch)
+    #     # run epoch
+    #     super().run_epoch()
+
+    def run_epoch(self):
+        self.rng = torch.Generator()
+        self.rng.manual_seed(1234 + self.epoch)
+
+        self.run_stage('train', self.train)
+        with torch.no_grad():
+            with self.swap_ema_state():
+                self.run_stage('valid', self.valid)
+                # the best state is updated with EMA states if available
+                self.update_best_state_from_stage('valid')
+            with self.swap_best_state():
+                #TODO: save checkpoints every 10 epochs
+                if self.should_run_stage('evaluate'):
+                    self.run_stage('evaluate', self.evaluate)
+                if self.should_run_stage('generate'):
+                    self.run_stage('generate', with_rank_rng()(self.generate))
 
 
 def evaluate_localizations(predictions, true_predictions, name):
