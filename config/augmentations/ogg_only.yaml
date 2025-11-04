@@ -11,5 +11,6 @@ select_aug_mode:
 
 aug_weights:
   ogg_compression: 1.0 # eval only never use in training even if eval_acc low
+  identity: 1
 
 n_max_aug: null
