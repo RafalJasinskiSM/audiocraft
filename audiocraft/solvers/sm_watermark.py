@@ -628,9 +628,8 @@ class SMWatermarkSolver(base.StandardSolver):
                 # the best state is updated with EMA states if available
                 self.update_best_state_from_stage('valid')
             with self.swap_best_state():
-                # TODO: save checkpoints every 10 epochs
-                if self.should_run_stage('evaluate'):
-                    self.run_stage('evaluate', self.evaluate)
+                # if self.should_run_stage('evaluate'):
+                #     self.run_stage('evaluate', self.evaluate)
                 if self.should_run_stage('generate'):
                     self.run_stage('generate', with_rank_rng()(self.generate))
 
