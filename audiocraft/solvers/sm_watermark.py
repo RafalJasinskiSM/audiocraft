@@ -33,6 +33,7 @@ from ..utils.audio_effects import (
 )
 from ..utils.samples.manager import SampleManager
 from ..data.audio import save_spectrograms
+from ..data.audio_utils import get_ogg
 from ..utils.utils import get_pool_executor, with_rank_rng
 
 from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio
@@ -282,9 +283,17 @@ class SMWatermarkSolver(base.StandardSolver):
         # adversarial losses
         if self.cfg.losses.adv != 0 or self.cfg.losses.feat != 0:
             for adv_name, adversary in self.adv_losses.items():
-                adv_loss, feat_loss = adversary(y_wm, y)
-                balanced_losses[f"adv_{adv_name}"] = adv_loss
-                balanced_losses[f"feat_{adv_name}"] = feat_loss
+                if getattr(self.cfg.adversarial.raw_loss, True):
+                    adv_loss, feat_loss = adversary(y_wm, y)
+                    balanced_losses[f"adv_{adv_name}"] = adv_loss
+                    balanced_losses[f"feat_{adv_name}"] = feat_loss
+
+                # Do ogg compression losses
+                if getattr(self.cfg.adversarial.ogg_loss, False) == True:
+                    adv_loss, feat_loss = adversary(get_ogg(y_wm, self.cfg.sample_rate, bitrate="24k"),
+                                                    get_ogg(y, self.cfg.sample_rate, bitrate="24k"))
+                    balanced_losses[f"adv_{adv_name}_ogg"] = adv_loss
+                    balanced_losses[f"feat_{adv_name}_ogg"] = feat_loss
 
         # auxiliary losses on quality/similarity
         for loss_name, criterion in self.aux_losses.items():
@@ -617,7 +626,7 @@ class SMWatermarkSolver(base.StandardSolver):
 
     def run_epoch(self):
         self.rng = torch.Generator()
-        self.rng.manual_seed(1234 + self.epoch)
+        self.rng.manual_seed(cfg.seed + self.epoch)
 
         self.run_stage('train', self.train)
         with torch.no_grad():
@@ -626,7 +635,7 @@ class SMWatermarkSolver(base.StandardSolver):
                 # the best state is updated with EMA states if available
                 self.update_best_state_from_stage('valid')
             with self.swap_best_state():
-                #TODO: save checkpoints every 10 epochs
+                # TODO: save checkpoints every 10 epochs
                 if self.should_run_stage('evaluate'):
                     self.run_stage('evaluate', self.evaluate)
                 if self.should_run_stage('generate'):
