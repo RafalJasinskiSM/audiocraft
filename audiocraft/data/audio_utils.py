@@ -5,7 +5,6 @@
 # LICENSE file in the root directory of this source tree.
 """Various utilities for audio convertion (pcm format, sample rate and channels),
 and volume normalization."""
-from .venv.lib.python3.9.site-packages.pip._vendor.requests.packages import target
 import io
 import logging
 import re
