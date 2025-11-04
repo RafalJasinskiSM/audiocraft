@@ -2,7 +2,7 @@
 
 defaults:
   - watermark/default
-  - /augmentations/ogg_only
+  - /augmentations/default
   - /model: watermark/sm_default
   - _self_
 
@@ -11,6 +11,9 @@ sample_rate: 16000
 channels: 1
 
 seed: 4321
+
+adversarial:
+  ogg_loss: true
 
 # solver hyperparameters
 evaluate:
