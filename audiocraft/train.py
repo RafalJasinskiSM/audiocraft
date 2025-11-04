@@ -131,6 +131,9 @@ def init_seed_and_system(cfg):
 def main(cfg):
     init_seed_and_system(cfg)
 
+    with open("/tmp/used_config.yaml", "w") as file:
+        omegaconf.OmegaConf.save(cfg, file)
+
     # Setup logging both to XP specific folder, and to stderr.
     log_name = '%s.log.{rank}' % cfg.execute_only if cfg.execute_only else 'solver.log.{rank}'
     flashy.setup_logging(level=str(cfg.logging.level).upper(), log_name=log_name)
