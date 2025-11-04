@@ -617,13 +617,6 @@ class SMWatermarkSolver(base.StandardSolver):
         logger.info("Watermarking model loaded!")
         return watermarking_model
 
-    # def run_epoch(self):
-    #     # reset random seed at the beginning of the epoch
-    #     self.rng = torch.Generator()
-    #     self.rng.manual_seed(1234 + self.epoch)
-    #     # run epoch
-    #     super().run_epoch()
-
     def run_epoch(self):
         self.rng = torch.Generator()
         self.rng.manual_seed(self.cfg.seed + self.epoch)
