@@ -1,5 +1,3 @@
-#!/bin/bash
-
 set -e  # Exit on any error
 
 # Check if conda is available

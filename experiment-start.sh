@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Check if three arguments are provided
 if [ "$#" -ne 3 ]; then
     echo "Usage: $0 experiment_name experinent/config dset/config"
