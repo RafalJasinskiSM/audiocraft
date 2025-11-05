@@ -1,4 +1,5 @@
 #! /bin/bash
+conda init
 yes | conda create --prefix=.venv python=3.9
 conda activate .venv/
 yes | conda install "ffmpeg<5" -c conda-forge
