@@ -20,11 +20,6 @@ conda create --prefix=.venv python=3.9 -y || {
 
 # Activate the conda environment
 echo "Activating conda environment..."
-conda init || {
-    echo "Error: Failed to initialize conda"
-    exit 1
-}
-
 conda activate .venv/ || {
     echo "Error: Failed to activate conda environment"
     exit 1
