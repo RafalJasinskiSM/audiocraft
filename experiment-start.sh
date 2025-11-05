@@ -1,9 +1,7 @@
-set -e
-
 # Check if three arguments are provided
 if [ "$#" -ne 3 ]; then
     echo "Usage: $0 experiment_name solver/config dset/config"
-    exit 1
+    return -1
 fi
 
 # Pass the arguments to the dora command
