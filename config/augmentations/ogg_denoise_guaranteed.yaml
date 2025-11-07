@@ -1,0 +1,19 @@
+# @package __global__
+
+audio_effects:
+  denoising:
+    sample_rate: ${sample_rate}
+  ogg_compression:
+    sample_rate: ${sample_rate}
+    bitrate: 128k # should be a string e.g. "8k", "32k".. cf ffmpeg to see available bitrates
+
+select_aug_mode:
+  "weighted" # other are 'all' and 'use_eval_acc', used to sample augmentations, `fixed` uses the prob from aug_weights, `all` uses all agmentations every step
+  # `use_eval_acc` changes the weights based on the accuracies at evaluation time
+
+aug_weights:
+  denoising: 1.0 # eval only never use in training even if eval_acc low
+  ogg_compression: 1.0 # eval only never use in training even if eval_acc low
+  identity: 1
+
+n_max_aug: null
