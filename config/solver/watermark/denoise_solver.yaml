@@ -1,0 +1,33 @@
+# @package __global__
+
+defaults:
+  - watermark/default
+  - /augmentations/denoise_only
+  - /model: watermark/sm_default
+  - _self_
+
+solver: sm_watermarking # standard name to load the solver using builders
+sample_rate: 16000
+channels: 1
+
+seed: 4321
+
+# solver hyperparameters
+evaluate:
+  every: 30
+  num_workers: 1
+generate:
+  every: 30
+  num_workers: 5
+  audio:
+    sample_rate: ${sample_rate}
+
+# checkpointing schedule
+checkpoint:
+  save_last: true
+  save_every: 5
+  keep_last: 10
+  keep_every_states: null
+
+optim:
+  epochs: 50
