@@ -14,6 +14,8 @@ import typing as tp
 import julius
 import torch
 import torchaudio
+import numpy as np
+import noisereduce as nr
 
 logger = logging.getLogger(__name__)
 
@@ -415,3 +417,15 @@ def get_aac(
         "AAC in the output."
     )
     return wav_tensor.to(device)
+
+
+def get_denoised(wav_tensor: torch.Tensor, sr: int) -> torch.Tensor:
+    audio_numpy = wav_tensor.numpy()
+    audio_numpy = audio_numpy.reshape(32, 16000)
+
+    denoised_audio = np.zeros_like(audio_numpy)
+    for i in range(audio_numpy.shape[0]):
+        denoised_audio[i] = nr.reduce_noise(y=audio_numpy[i], sr=16000)
+    denoised_tensor = torch.from_numpy(denoised_audio).reshape(32, 1, 16000)
+    return denoised_tensor
+

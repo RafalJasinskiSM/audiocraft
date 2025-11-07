@@ -15,7 +15,7 @@ import omegaconf
 import torch
 from julius import fft_conv1d, resample_frac
 
-from ..data.audio_utils import get_aac, get_mp3, get_ogg
+from ..data.audio_utils import get_aac, get_mp3, get_ogg, get_denoised
 
 if tp.TYPE_CHECKING:
     from ..models.encodec import CompressionModel
@@ -476,4 +476,13 @@ class AudioEffects:
         out = apply_compression_skip_grad(
             tensor, get_aac, sr=sample_rate, bitrate=bitrate, lowpass_freq=lowpass_freq
         )
+        return audio_effect_return(tensor=out, mask=mask)
+
+    @staticmethod
+    def denoising(
+        tensor: torch.Tensor,
+        sample_rate: int = 16000,
+        mask: tp.Optional[torch.Tensor] = None,
+    ) -> tp.Union[tp.Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+        out = apply_compression_skip_grad(tensor, get_denoised, sr=sample_rate)
         return audio_effect_return(tensor=out, mask=mask)
