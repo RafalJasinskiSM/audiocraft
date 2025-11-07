@@ -30,6 +30,13 @@ conda install "ffmpeg<5" -c conda-forge -y || {
     return -1
 }
 
+# Install libiconv
+echo "Installing libiconv..."
+conda install libiconv -y || {
+    echo "Error: Failed to install libiconv"
+    return -1
+}
+
 # Install torch and other dependencies using pip
 echo "Installing torch..."
 python -m pip install 'torch==2.1.0' || {
