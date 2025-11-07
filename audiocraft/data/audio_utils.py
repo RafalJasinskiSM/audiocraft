@@ -426,6 +426,6 @@ def get_denoised(wav_tensor: torch.Tensor, sr: int) -> torch.Tensor:
     denoised_audio = np.zeros_like(audio_numpy)
     for i in range(audio_numpy.shape[0]):
         denoised_audio[i] = nr.reduce_noise(y=audio_numpy[i], sr=16000)
-    denoised_tensor = torch.from_numpy(denoised_audio).reshape(32, 1, 16000)
+    denoised_tensor = torch.from_numpy(denoised_audio).reshape(32, 1, 16000).to(wav_tensor.device)
     return denoised_tensor
 
