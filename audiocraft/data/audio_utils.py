@@ -420,7 +420,7 @@ def get_aac(
 
 
 def get_denoised(wav_tensor: torch.Tensor, sr: int) -> torch.Tensor:
-    audio_numpy = wav_tensor.numpy()
+    audio_numpy = wav_tensor.cpu().numpy()
     audio_numpy = audio_numpy.reshape(32, 16000)
 
     denoised_audio = np.zeros_like(audio_numpy)
