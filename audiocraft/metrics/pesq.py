@@ -28,10 +28,6 @@ class PesqMetric(torchmetrics.Metric):
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: torch.Tensor, targets: torch.Tensor):
-        # Fix NaN related error
-        preds = torch.nan_to_num(preds, nan=0.0)
-        targets = torch.nan_to_num(targets, nan=0.0)
-
         if self.sr != 16000:
             preds = julius.resample_frac(preds, self.sr, 16000)
             targets = julius.resample_frac(targets, self.sr, 16000)
