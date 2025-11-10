@@ -14,8 +14,10 @@ import typing as tp
 import julius
 import torch
 import torchaudio
+import math
 import numpy as np
 import noisereduce as nr
+import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 
@@ -420,12 +422,18 @@ def get_aac(
 
 
 def get_denoised(wav_tensor: torch.Tensor, sr: int) -> torch.Tensor:
-    audio_numpy = wav_tensor.cpu().numpy()
-    audio_numpy = audio_numpy.reshape(32, 16000)
+    tg = nr.torchgate.TorchGate(sr=sr, nonstationary=True).to(wav_tensor.device)
 
-    denoised_audio = np.zeros_like(audio_numpy)
-    for i in range(audio_numpy.shape[0]):
-        denoised_audio[i] = nr.reduce_noise(y=audio_numpy[i], sr=16000)
-    denoised_tensor = torch.from_numpy(denoised_audio).reshape(32, 1, 16000).to(wav_tensor.device)
+    # Calculate padding
+    samples_count = wav_tensor.shape[-1]
+    closest_pow_of_2 = math.ceil(samples_count / 1024) * 1024
+    pad_size = int((closest_pow_of_2 - samples_count) / 2)
+
+    # Apply denoise
+    wav_tensor = wav_tensor.squeeze()
+    wav_tensor = F.pad(wav_tensor, (pad_size, pad_size), mode="reflect")
+    denoised_tensor = tg(wav_tensor)
+    denoised_tensor = denoised_tensor[:, pad_size:-pad_size].clone().detach()
+    denoised_tensor = denoised_tensor.unsqueeze(1)
+
     return denoised_tensor
-
