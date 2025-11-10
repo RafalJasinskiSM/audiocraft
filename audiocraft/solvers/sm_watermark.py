@@ -691,8 +691,6 @@ def evaluate_audio_watermark(
 
 def tensor_pesq(y_pred: torch.Tensor, y: torch.Tensor, sr: int):
     # pesq returns error if no speech is detected, so we catch it
-    y_pred = torch.nan_to_num(y_pred, nan=0.0)
-    y = torch.nan_to_num(y, nan=0.0)
     return PesqMetric(sr)(y_pred, y).item()
 
 

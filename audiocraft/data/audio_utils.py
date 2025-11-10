@@ -422,7 +422,7 @@ def get_aac(
 
 
 def get_denoised(wav_tensor: torch.Tensor, sr: int) -> torch.Tensor:
-    tg = nr.torchgate.TorchGate(sr=sr, nonstationary=True).to(wav_tensor.device)
+    tg = nr.torchgate.TorchGate(sr=sr, nonstationary=False).to(wav_tensor.device)
 
     # Calculate padding
     samples_count = wav_tensor.shape[-1]
