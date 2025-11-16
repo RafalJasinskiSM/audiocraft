@@ -1,18 +1,23 @@
 # @package __global__
 
+### NOTE !!!
+# 
+# Please leave '##' by the modified parameter 
+# Good to leave default value in comment
+#
+#### 
+
 audioseal:
   autoencoder: seanet
   sample_rate: 16000
   channels: 1
   nbits: 16
 
-#TBD
-
 seanet:
   dimension: 128
   channels: 1
   causal: false
-  n_filters: 32
+  n_filters: 16 ## default 32
   n_residual_layers: 1
   ratios: [8, 5, 4, 2]
   activation: ELU

@@ -61,3 +61,7 @@ dataset/*
 /local_scripts
 /notes
 .nvim.lua
+
+# ml-> outputs for debugging
+outputs
+outputs/
