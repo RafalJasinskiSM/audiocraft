@@ -2,7 +2,7 @@
 
 defaults:
   - watermark/default
-  - /augmentations/ogg_only
+  - /augmentations/extended_default
   - /model: watermark/sm_default
   - _self_
 
