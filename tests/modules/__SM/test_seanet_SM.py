@@ -98,12 +98,12 @@ class TestSEANetModel_SM:
         
         print(f"Evaluating {cfg.config_name}...") 
 
-        try :
-            model = get_watermark_model(cfg)
-        except: 
-            print( f"\tUnable to craeate model for given modification: {cfg.config_name}" )
-            TestSEANetModel_SM.save_results(cfg,None,list(modifications.keys()),True)
-            return 
+        #try :
+        model = get_watermark_model(cfg)
+        #except: 
+        #    print( f"\tUnable to craeate model for given modification: {cfg.config_name}" )
+        #    TestSEANetModel_SM.save_results(cfg,None,list(modifications.keys()),True)
+        #    return 
         
         submodel_list = [   ("generator", model.generator, generator_depth ),
                             ("detector" , model.detector , dectector_depth ) ]

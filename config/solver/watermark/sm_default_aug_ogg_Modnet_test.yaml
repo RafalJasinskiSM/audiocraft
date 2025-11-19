@@ -7,6 +7,8 @@ defaults:
   - _self_
 
 config_name : test_Modnet
+test_out_dir: /home/mateusz_lorkiewicz/fuch_SM/audiocraft/tests/modules/__SM/test_output/ # output dir for testing
+
 solver: sm_watermarking # standard name to load the solver using builders
 sample_rate: 16000
 channels: 1

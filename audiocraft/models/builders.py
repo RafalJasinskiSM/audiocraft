@@ -383,7 +383,7 @@ def get_watermark_model(cfg: omegaconf.DictConfig) -> WMModel:
 
     # ML -> mod      
     if hasattr(cfg, "audioseal") :
-        model_type = getattr(cfg['audioseal'], "autoencoder") if hasattr(cfg['audioseal'], "audioseal") else 'seanet'
+        model_type = getattr(cfg['audioseal'], "autoencoder") if hasattr(cfg['audioseal'], "autoencoder") else 'seanet'
     else : 
         model_type = 'seanet'
     assert hasattr(
@@ -426,7 +426,7 @@ def get_watermark_model(cfg: omegaconf.DictConfig) -> WMModel:
 
         typed_seanet_cfg = audioseal.builder.SEANetConfig(**seanet_cfg)
         typed_detector_cfg = audioseal.builder.DetectorConfig(**detector_cfg)
-        _cfg = audioseal.builder.AudioSealDetectorConfig(
+        _cfg = audioseal.builder.AudioSealDetectorConfig_SeaNet(                # AudioSealDetectorConfig -> AudioSealDetectorConfig_SeaNet
             nbits=nbits, seanet=typed_seanet_cfg, detector=typed_detector_cfg
         )
         return audioseal.builder.create_detector(_cfg)
