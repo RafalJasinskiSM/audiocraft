@@ -56,6 +56,12 @@ python -m pip install -e '.[wm]' || {
     return -1
 }
 
+echo "Installing custom audioseal package..."
+python -m pip install git+https://github.com/mlSoftwaremind/audioseal.git@ml_custom_models || {
+    echo "Error: Failed to install package in development mode"
+    return -1
+}
+
 # Set environment variable for the conda environment
 echo "Setting environment variable..."
 conda env config vars set AUDIOCRAFT_TEAM=softwaremind || {

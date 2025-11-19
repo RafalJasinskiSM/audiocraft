@@ -19,4 +19,9 @@ from .conv import (
 )
 from .lstm import StreamableLSTM
 from .seanet import SEANetEncoder, SEANetDecoder
+# ML -> mod
+#   Supporting custom model: 
+#   -> include modules from new models
+from .modnet import ModNetEncoder, ModNetDecoder
+# endmod
 from .transformer import StreamingTransformer

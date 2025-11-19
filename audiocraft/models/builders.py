@@ -40,6 +40,24 @@ from .flow_matching import FlowMatchingModel
 from .unet import DiffusionUnet
 from .watermark import WMModel
 
+# ML -> mod
+#   Supporting custom model: 
+#   -> add members with custom model config dataclass to  `WMSupportedModels` and `DetectorSupportedModels`
+
+from enum import Enum
+
+class WMSupportedModels_Encoder (Enum) : 
+    seanet = audiocraft.modules.SEANetEncoder
+    modnet = audiocraft.modules.ModNetEncoder # temp solution
+
+class WMSupportedModels_Decoder (Enum) : 
+    seanet = audiocraft.modules.SEANetDecoder
+    modnet = audiocraft.modules.ModNetDecoder # temp solution
+
+# TBD - currently unsupported in audioseal
+#class DetectorSupportedModels (Enum) :
+
+# endmod
 
 def get_quantizer(
     quantizer: str, cfg: omegaconf.DictConfig, dimension: int
@@ -54,18 +72,24 @@ def get_quantizer(
 
 
 def get_encodec_autoencoder(encoder_name: str, cfg: omegaconf.DictConfig):
-    if encoder_name == "seanet":
-        kwargs = dict_from_config(getattr(cfg, "seanet"))
+    # ML -> mod
+    import audioseal
+
+    if encoder_name in audioseal.loader.WMSupportedModels.__members__ :
+    #if encoder_name == "seanet":
+        kwargs = dict_from_config(getattr(cfg, encoder_name)) # "seanet" -> encoder_name
         encoder_override_kwargs = kwargs.pop("encoder")
         decoder_override_kwargs = kwargs.pop("decoder")
         encoder_kwargs = {**kwargs, **encoder_override_kwargs}
         decoder_kwargs = {**kwargs, **decoder_override_kwargs}
-        encoder = audiocraft.modules.SEANetEncoder(**encoder_kwargs)
-        decoder = audiocraft.modules.SEANetDecoder(**decoder_kwargs)
+        encoder = WMSupportedModels_Encoder[encoder_name].value(**encoder_kwargs)
+        decoder = WMSupportedModels_Decoder[encoder_name].value(**decoder_kwargs)
+        #encoder = audiocraft.modules.SEANetEncoder(**encoder_kwargs) 
+        #decoder = audiocraft.modules.SEANetDecoder(**decoder_kwargs)
         return encoder, decoder
     else:
         raise KeyError(f"Unexpected compression model {cfg.compression_model}")
-
+    # endmod
 
 def get_compression_model(cfg: omegaconf.DictConfig) -> CompressionModel:
     """Instantiate a compression model."""
@@ -357,24 +381,45 @@ def get_watermark_model(cfg: omegaconf.DictConfig) -> WMModel:
 
     from .watermark import AudioSeal
 
-    # Builder encoder and decoder directly using audiocraft API to avoid cyclic import
+    # ML -> mod      
+    if hasattr(cfg, "audioseal") :
+        model_type = getattr(cfg['audioseal'], "autoencoder") if hasattr(cfg['audioseal'], "audioseal") else 'seanet'
+    else : 
+        model_type = 'seanet'
     assert hasattr(
-        cfg, "seanet"
-    ), "Missing required `seanet` parameters in AudioSeal config"
-    encoder, decoder = get_encodec_autoencoder("seanet", cfg)
+        cfg, model_type
+    ), f"Missing required `{model_type}` parameters in AudioSeal config"
+    encoder, decoder = get_encodec_autoencoder(model_type, cfg)
+    # Builder encoder and decoder directly using audiocraft API to avoid cyclic import
+    # assert hasattr(
+    #     cfg, "seanet"
+    # ), "Missing required `seanet` parameters in AudioSeal config"
+    # encoder, decoder = get_encodec_autoencoder("seanet", cfg)
+    # endmod
 
     # Build message processor
     kwargs = (
         dict_from_config(getattr(cfg, "audioseal")) if hasattr(cfg, "audioseal") else {}
     )
     nbits = kwargs.get("nbits", 0)
-    hidden_size = getattr(cfg.seanet, "dimension", 128)
+    # ML-> mod
+    hidden_size = getattr(cfg[model_type], "dimension", 128)
+    # endmod
     msg_processor = audioseal.MsgProcessor(nbits, hidden_size=hidden_size)
 
     # Build detector using audioseal API
     def _get_audioseal_detector():
         # We don't need encoder and decoder params from seanet, remove them
-        seanet_cfg = dict_from_config(cfg.seanet)
+        # ML-> mod
+        # currently support only for Seanet
+        if hasattr(cfg, "audioseal") :
+            model_type = getattr(cfg['audioseal'], "detector_type") if hasattr(cfg['audioseal'], "detector_type") else 'seanet'
+        else : 
+            model_type = 'seanet'
+
+        assert model_type == 'seanet', 'Detector models other than Seanet are not currently supported !!!'
+        # endmod
+        seanet_cfg = dict_from_config(cfg[model_type])
         seanet_cfg.pop("encoder")
         seanet_cfg.pop("decoder")
         detector_cfg = dict_from_config(cfg.detector)
