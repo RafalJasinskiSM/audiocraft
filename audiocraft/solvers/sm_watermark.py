@@ -613,7 +613,17 @@ class SMWatermarkSolver(base.StandardSolver):
         self.rng = torch.Generator()
         self.rng.manual_seed(self.cfg.seed + self.epoch)
 
-        super().run_epoch()
+        self.run_stage('train', self.train)
+        with torch.no_grad():
+            with self.swap_ema_state():
+                self.run_stage('valid', self.valid)
+                # the best state is updated with EMA states if available
+                self.update_best_state_from_stage('valid')
+            with self.swap_best_state():
+                # if self.should_run_stage('evaluate'):
+                #     self.run_stage('evaluate', self.evaluate)
+                if self.should_run_stage('generate'):
+                    self.run_stage('generate', with_rank_rng()(self.generate))
 
 
 def evaluate_localizations(predictions, true_predictions, name):
