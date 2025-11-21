@@ -12,10 +12,10 @@ channels: 1
 
 # solver hyperparameters
 evaluate:
-  every: 30
+  every: 5
   num_workers: 1
 generate:
-  every: 30
+  every: 5
   num_workers: 5
   audio:
     sample_rate: ${sample_rate}
