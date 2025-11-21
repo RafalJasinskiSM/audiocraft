@@ -3,8 +3,8 @@
 defaults:
   - /solver/default
   - /augmentations/default
-  - override /dset: audio/voxpopuli
   - /model: watermark/sm_lightweight_2
+  - override /dset: audio/voxpopuli
   - _self_
 
 solver: watermarking # standard name to load the solver using builders
